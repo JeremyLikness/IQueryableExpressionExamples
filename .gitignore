@@ -18,5 +18,14 @@ TestResults/
 # Docs log
 log.txt
 
+#Debug log
+debug.log
+
 # SQLite database
 *.db
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+
+# Benchmarks
+BenchmarkDotNet.Artifacts/

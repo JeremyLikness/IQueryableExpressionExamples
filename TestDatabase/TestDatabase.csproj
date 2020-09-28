@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Packable>true</Packable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="SampleData\core.xml" />
+    <None Remove="SampleData\serialization.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="SampleData\core.xml" />
+    <EmbeddedResource Include="SampleData\serialization.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="SampleData\core.xml" />
+  </ItemGroup>
+
+</Project>

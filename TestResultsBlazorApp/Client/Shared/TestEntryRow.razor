@@ -1,0 +1,92 @@
+﻿@using TestResultsBlazorApp.Shared;
+
+@if (ShowSeparator)
+{
+    <div class="row">
+        <div class="col-12"><hr /></div>
+    </div>
+}
+<div class="row">
+    <div class="col-12 card-header"><strong>@Header</strong></div>
+</div>
+<div class="row">
+    <div class="col-8" @onclick="async () => await DataAccess.SortNameAsync(true)">
+        @if (DataAccess.SortName)
+        {
+            <strong>Name&nbsp;@SortIcon</strong>
+        }
+        else
+        {
+            <span>Name</span>
+        }
+    </div>
+    <div class="col-4" @onclick="async () => await DataAccess.SortNameAsync(false)">
+        @if (!DataAccess.SortName)
+        {
+            <strong>Duration&nbsp;@SortIcon</strong>
+        }
+        else
+        {
+            <span>Duration</span>
+        }
+    </div>
+</div>
+@foreach (var entry in Entries)
+{
+    <div class="row" @key="entry.Id">
+        <div class="col-8" @onclick="async () => await ValueClicked(entry)">
+            @if (entry.Id == EntryId)
+            {
+                <strong>@entry.Name</strong>
+            }
+            else
+            {
+                <span>@entry.Name</span>
+            }
+        </div>
+        <div class="col-4">
+            <span>@DataAccess.DurationDisplay(entry.DurationTicks)</span>
+        </div>
+    </div>
+}
+
+@code {
+    [CascadingParameter]
+    TestDataAccess DataAccess { get; set; }
+
+    [Parameter]
+    public bool ShowSeparator { get; set; } = true;
+
+    [Parameter]
+    public string Header { get; set; }
+
+    [Parameter]
+    public IEnumerable<TestEntry> Entries { get; set; }
+
+    [Parameter]
+    public string EntryId { get; set; }
+
+    protected string SortIcon =>
+        DataAccess.SortAscending ? "⬆" : "⬇";
+
+    protected async Task ValueClicked(TestEntry value)
+    {
+        if (string.IsNullOrWhiteSpace(value.Id))
+        {
+            return;
+        }
+
+        switch (value.Type)
+        {
+            case nameof(TestDatabase.TestAssembly):
+                await DataAccess.SetAssembly(value.Id);
+                break;
+            case nameof(TestDatabase.TestGroup):
+                await DataAccess.SetGroup(value.Id);
+                break;
+            case nameof(TestDatabase.TestResult):
+                await DataAccess.SetTest(value.Id);
+                break;
+        }
+    }
+}

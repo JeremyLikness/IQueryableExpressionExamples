@@ -1,0 +1,115 @@
+﻿@page "/"
+@inject TestDataAccess DataAccess
+@implements IDisposable
+
+<CascadingValue Value="DataAccess" IsFixed="true">
+    <h1>Test Results</h1>
+
+    <p>
+        Global filter: <input @bind="Filter" @bind:event="oninput" type="text" />
+        &nbsp;
+        <button class="btn btn-secondary" @onclick="() => Filter=string.Empty">Clear</button>
+    </p>
+    <div class="container-fluid">
+        @if (!string.IsNullOrWhiteSpace(DataAccess.ErrorMessage))
+        {
+            <div class="row">
+                <div class="col-12 alert alert-danger">@DataAccess.ErrorMessage</div>
+            </div>
+        }
+
+        @if (DataAccess.Loading)
+        {
+            <div class="row">
+                <div class="col-12 alert alert-info">Loading...</div>
+            </div>
+        }
+        else
+        {
+            if (DataAccess.TestEntries == null || DataAccess.TestEntries.Count < 1)
+            {
+                <div class="row">
+                    <div class="col-12 alert alert-warning">No entries found.</div>
+                </div>
+            }
+            else
+            {
+                <TestEntryRow Entries="@DataAccess.Assemblies" EntryId="@DataAccess.AssemblyId"
+                              Header="Assemblies" ShowSeparator="false"/>
+                @if (!string.IsNullOrWhiteSpace(DataAccess.AssemblyId))
+                {
+                    <TestEntryRow Entries="@DataAccess.Groups" EntryId="@DataAccess.GroupId"
+                                  Header="@string.Concat(DataAccess.AssemblyName, " Groups")" />
+                }
+                @if (!string.IsNullOrWhiteSpace(DataAccess.GroupId))
+                {
+                    <TestEntryRow Entries="@DataAccess.TestResults" EntryId="@DataAccess.TestResultId"
+                                  Header="@string.Concat(DataAccess.GroupName, " Tests")"/>
+                }
+                @if (!string.IsNullOrWhiteSpace(DataAccess.TestResultId))
+                {
+                    <TestEntryRow Entries="@DataAccess.Iterations" EntryId=""
+                                  Header="@string.Concat(DataAccess.TestName, " Iterations")"/>
+                }
+            }
+        }
+    </div>
+</CascadingValue>
+@code {
+
+    protected System.Timers.Timer timer = null;
+
+    private string filter = string.Empty;
+
+    protected string Filter
+    {
+        get => filter;
+        set
+        {
+            if (value != filter)
+            {
+                filter = value;
+                if (timer != null)
+                {
+                    timer.Dispose();
+                    timer = null;
+                }
+                timer = new System.Timers.Timer(300);
+                timer.Elapsed += Timer_Elapsed;
+                timer.Enabled = true;
+            }
+        }
+    }
+
+    protected async void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+    {
+        timer.Dispose();
+        timer = null;
+        if (!string.IsNullOrWhiteSpace(filter))
+        {
+            DataAccess.Filter = filter.Trim().ToLowerInvariant();
+        }
+        else
+        {
+            DataAccess.Filter = string.Empty;
+        }
+        await DataAccess.LoadAsync();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await DataAccess.LoadAsync();
+        DataAccess.LoadAsyncCalled += OnLoadAsync;
+        await base.OnInitializedAsync();
+    }
+
+    protected void OnLoadAsync(object sender, EventArgs e)
+    {
+        InvokeAsync(() => StateHasChanged());
+    }
+
+    public void Dispose()
+    {
+        DataAccess.LoadAsyncCalled -= OnLoadAsync;
+    }
+}

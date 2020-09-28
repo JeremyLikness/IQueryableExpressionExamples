@@ -1,0 +1,22 @@
+# Ignore these files
+
+# Visual Studio options folder
+.vs/
+
+# Build objects
+obj/
+
+# Packages
+packages/
+
+# Build assets
+bin/
+
+# Test results
+TestResults/
+
+# Docs log
+log.txt
+
+# SQLite database
+*.db

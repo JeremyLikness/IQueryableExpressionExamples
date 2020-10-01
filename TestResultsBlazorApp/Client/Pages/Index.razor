@@ -1,6 +1,7 @@
 ﻿@page "/"
 @inject TestDataAccess DataAccess
 @implements IDisposable
+@using TestResultsBlazorApp.Shared;
 
 <CascadingValue Value="DataAccess" IsFixed="true">
     <h1>Test Results</h1>
@@ -9,6 +10,7 @@
         Global filter: <input @bind="Filter" @bind:event="oninput" type="text" />
         &nbsp;
         <button class="btn btn-secondary" @onclick="() => Filter=string.Empty">Clear</button>
+        &nbsp;
     </p>
     <div class="container-fluid">
         @if (!string.IsNullOrWhiteSpace(DataAccess.ErrorMessage))
@@ -34,19 +36,27 @@
             }
             else
             {
+                <div class="row">
+                    <div class="col-12">
+                        <b>Fastest:</b> <span class="time-fast">@DataAccess.DurationDisplay(DataAccess.Fastest(DataAccess.MostSpecificType))</span>
+                        <b>Slowest:</b> <span class="time-slow">@DataAccess.DurationDisplay(DataAccess.Slowest(DataAccess.MostSpecificType))</span>
+                        <b>Median:</b> <span class="time-moderate">@DataAccess.DurationDisplay(DataAccess.Median(DataAccess.MostSpecificType))</span>
+                        <b>Mean:</b> <span class="time-moderate">@DataAccess.DurationDisplay(DataAccess.Mean(DataAccess.MostSpecificType))</span>
+                    </div>
+                </div>
                 <TestEntryRow Entries="@DataAccess.Assemblies" EntryId="@DataAccess.AssemblyId"
                               Header="Assemblies" ShowSeparator="false"/>
-                @if (!string.IsNullOrWhiteSpace(DataAccess.AssemblyId))
+                @if (DataAccess.Groups.Any())
                 {
                     <TestEntryRow Entries="@DataAccess.Groups" EntryId="@DataAccess.GroupId"
                                   Header="@string.Concat(DataAccess.AssemblyName, " Groups")" />
                 }
-                @if (!string.IsNullOrWhiteSpace(DataAccess.GroupId))
+                @if (DataAccess.TestResults.Any())
                 {
                     <TestEntryRow Entries="@DataAccess.TestResults" EntryId="@DataAccess.TestResultId"
                                   Header="@string.Concat(DataAccess.GroupName, " Tests")"/>
                 }
-                @if (!string.IsNullOrWhiteSpace(DataAccess.TestResultId))
+                @if (DataAccess.Iterations.Any())
                 {
                     <TestEntryRow Entries="@DataAccess.Iterations" EntryId=""
                                   Header="@string.Concat(DataAccess.TestName, " Iterations")"/>

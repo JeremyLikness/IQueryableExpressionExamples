@@ -9,8 +9,8 @@
 <div class="row">
     <div class="col-12 card-header"><strong>@Header</strong></div>
 </div>
-<div class="row">
-    <div class="col-8" @onclick="async () => await DataAccess.SortNameAsync(true)">
+<div class="row card-header">
+    <div class="col-8 clickable" @onclick="async () => await DataAccess.SortNameAsync(true)">
         @if (DataAccess.SortName)
         {
             <strong>Name&nbsp;@SortIcon</strong>
@@ -20,7 +20,7 @@
             <span>Name</span>
         }
     </div>
-    <div class="col-4" @onclick="async () => await DataAccess.SortNameAsync(false)">
+    <div class="col-4 clickable" @onclick="async () => await DataAccess.SortNameAsync(false)">
         @if (!DataAccess.SortName)
         {
             <strong>Duration&nbsp;@SortIcon</strong>
@@ -34,7 +34,7 @@
 @foreach (var entry in Entries)
 {
     <div class="row" @key="entry.Id">
-        <div class="col-8" @onclick="async () => await ValueClicked(entry)">
+        <div class="col-8 clickable" @onclick="async () => await ValueClicked(entry)">
             @if (entry.Id == EntryId)
             {
                 <strong>@entry.Name</strong>
@@ -45,7 +45,7 @@
             }
         </div>
         <div class="col-4">
-            <span>@DataAccess.DurationDisplay(entry.DurationTicks)</span>
+            <span class="@ModifierClass(entry)">@DataAccess.DurationDisplay(entry.DurationTicks)</span>
         </div>
     </div>
 }
@@ -66,8 +66,47 @@
     [Parameter]
     public string EntryId { get; set; }
 
+    private string Type => Entries.Select(e => e.Type).FirstOrDefault();
+
+    private TimeSpan fastCutoff
+    {
+        get
+        {
+            var fastest = DataAccess.Fastest(Type);
+            var spread = DataAccess.Median(Type) - fastest;
+            return fastest + (spread * (2.0 / 3));
+        }
+    }
+
+    private TimeSpan slowCutoff
+    {
+        get
+        {
+            var median = DataAccess.Median(Type);
+            var spread = DataAccess.Slowest(Type) - median;
+            return median + (spread * (2.0/3));
+        }
+    }
+
+    protected string ModifierClass(TestEntry entry)
+    {
+        var ts = TimeSpan.FromTicks(entry.DurationTicks);
+
+        if (ts < fastCutoff)
+        {
+            return "time-fast";
+        }
+
+        if (ts > slowCutoff)
+        {
+            return "time-slow";
+        }
+
+        return "time-moderate";
+    }
+
     protected string SortIcon =>
-        DataAccess.SortAscending ? "⬆" : "⬇";
+    DataAccess.SortAscending ? "⬆" : "⬇";
 
     protected async Task ValueClicked(TestEntry value)
     {

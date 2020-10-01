@@ -30,3 +30,12 @@ This is a sample app showing how expressions can be serialized using the
 [ExpressionPowerTools](https://github.com/jeremylikness/ExpressionPowerTools) package.
 Set the `.Server` project for startup to run. It will automatically generate and seed the
 initial Sqlite database.
+
+## QueryMutators
+
+This application shows several ways to mutate queries to perform tasks such as:
+
+- Enforce limits on the query return ("guard rails")
+- Intercept predicates in the tree
+- Evaluate ALL predicates against ALL values to debug why some are `true` and others are `false`.
+-  

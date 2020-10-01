@@ -202,3 +202,24 @@ div .row:hover {
 div .detail-cell:hover {
     background: lightyellow;
 }
+
+.time-slow {
+    color: red;
+}
+
+.time-moderate {
+    color: orange;
+}
+
+.time-fast {
+    color: green;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.clickable:hover {
+    color: blue;
+    text-decoration: underline;
+}

@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using TestDatabase;
 using TestResultsBlazorApp.Shared;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 
 namespace TestResultsBlazorApp.Client
 {
@@ -40,6 +39,110 @@ namespace TestResultsBlazorApp.Client
                 .Where(t => t.Type == nameof(TestIterationResult));
         }
 
+        private IDictionary<string, IDictionary<string, TimeSpan>> times =
+            new Dictionary<string, IDictionary<string, TimeSpan>>
+            {
+                { nameof(Fastest), new Dictionary<string, TimeSpan>
+                    {
+                        { nameof(TestAssembly), TimeSpan.FromSeconds(0) },
+                        { nameof(TestGroup), TimeSpan.FromSeconds(0) },
+                        { nameof(TestResult), TimeSpan.FromSeconds(0) },
+                        { nameof(TestIterationResult), TimeSpan.FromSeconds(0) }
+                    }
+                }
+                ,
+                { nameof(Slowest), new Dictionary<string, TimeSpan>
+                    {
+                        { nameof(TestAssembly), TimeSpan.FromSeconds(1) },
+                        { nameof(TestGroup), TimeSpan.FromSeconds(1) },
+                        { nameof(TestResult), TimeSpan.FromSeconds(1) },
+                        { nameof(TestIterationResult), TimeSpan.FromSeconds(1) }
+                    }
+                },
+                { nameof(Median), new Dictionary<string, TimeSpan>
+                    {
+                        { nameof(TestAssembly), TimeSpan.FromSeconds(0.5) },
+                        { nameof(TestGroup), TimeSpan.FromSeconds(0.5) },
+                        { nameof(TestResult), TimeSpan.FromSeconds(0.5) },
+                        { nameof(TestIterationResult), TimeSpan.FromSeconds(0.5) }
+                    }
+                },
+                { nameof(Mean), new Dictionary<string, TimeSpan>
+                    {
+                        { nameof(TestAssembly), TimeSpan.FromSeconds(0.5) },
+                        { nameof(TestGroup), TimeSpan.FromSeconds(0.5) },
+                        { nameof(TestResult), TimeSpan.FromSeconds(0.5) },
+                        { nameof(TestIterationResult), TimeSpan.FromSeconds(0.5) }
+                    }
+                },
+            };
+
+        public TimeSpan Fastest(string type) => times[nameof(Fastest)][type];
+
+        public TimeSpan Slowest(string type) => times[nameof(Slowest)][type];
+
+        public TimeSpan Median(string type) => times[nameof(Median)][type];
+
+        public TimeSpan Mean(string type) => times[nameof(Mean)][type];
+
+        protected void ComputeTimesFor(string type)
+        {
+            if (string.IsNullOrWhiteSpace(type))
+            {
+                return;
+            }
+
+            var count = TestEntries.Count(te => te.Type == type);
+            
+            if (count == 0)
+            {
+                times[nameof(Fastest)][type] = TimeSpan.FromSeconds(0);
+                times[nameof(Slowest)][type] = TimeSpan.FromSeconds(1);
+                times[nameof(Median)][type] = TimeSpan.FromSeconds(0.5);
+                times[nameof(Mean)][type] = TimeSpan.FromSeconds(0.5);
+                return;
+            }
+
+            times[nameof(Fastest)][type] = TimeSpan.FromTicks(
+                TestEntries.Where(te => te.Type == type).Min(te => te.DurationTicks));
+
+            times[nameof(Slowest)][type] = TimeSpan.FromTicks(
+                TestEntries.Where(te => te.Type == type).Max(te => te.DurationTicks));
+
+            var orderBy = TestEntries.Where(te => te.Type == type)
+                .OrderBy(te => te.DurationTicks);
+
+            var middle = count / 2;
+            times[nameof(Median)][type] = TimeSpan.FromTicks(orderBy.ElementAt(middle).DurationTicks);
+            
+            times[nameof(Mean)][type] = TimeSpan.FromTicks(
+                (long)TestEntries.Where(te => te.Type == type).Average(te => te.DurationTicks));
+        }
+
+        public string MostSpecificType
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(AssemblyId))
+                {
+                    return nameof(TestAssembly);
+                }
+
+                if (string.IsNullOrWhiteSpace(GroupId))
+                {
+                    return nameof(TestGroup);
+                }
+
+                if (string.IsNullOrWhiteSpace(TestResultId) ||
+                    !Iterations.Any())
+                {
+                    return nameof(TestResult);
+                }
+
+                return nameof(TestIterationResult);
+            }
+        }
+
         public bool Loading { get; private set; } = false;
         public bool SortName { get; private set; } = false;
         public bool SortAscending { get; private set; } = false;
@@ -60,8 +163,10 @@ namespace TestResultsBlazorApp.Client
         private readonly TimeSpan Sec = TimeSpan.FromSeconds(1);
 
         public string DurationDisplay(long durationTicks)
+            => DurationDisplay(TimeSpan.FromTicks(durationTicks));
+
+        public string DurationDisplay(TimeSpan duration)
         {
-            var duration = TimeSpan.FromTicks(durationTicks);
             if (duration < Ms)
             {
                 return $"{Math.Floor(duration.TotalMilliseconds * 1000)} ns";
@@ -219,6 +324,7 @@ namespace TestResultsBlazorApp.Client
             {
                 var assemblyEntries = await testEntries.ExecuteRemote().ToListAsync();
                 TestEntries = new List<TestEntry>(assemblyEntries);
+                ComputeTimesFor(nameof(TestAssembly));
             }
             catch (Exception ex)
             {
@@ -287,6 +393,7 @@ namespace TestResultsBlazorApp.Client
             {
                 var iterationResults = await testEntries.ExecuteRemote().ToListAsync();
                 TestEntries.AddRange(iterationResults);
+                ComputeTimesFor(nameof(TestIterationResult));
             }
             catch (Exception ex)
             {
@@ -343,6 +450,7 @@ namespace TestResultsBlazorApp.Client
             {
                 var testResults = await testEntries.ExecuteRemote().ToListAsync();
                 TestEntries.AddRange(testResults);
+                ComputeTimesFor(nameof(TestResult));
             }
             catch (Exception ex)
             {
@@ -400,6 +508,7 @@ namespace TestResultsBlazorApp.Client
             {
                 var groupResults = await testEntries.ExecuteRemote().ToListAsync();
                 TestEntries.AddRange(groupResults);
+                ComputeTimesFor(nameof(TestGroup));
             }
             catch (Exception ex)
             {

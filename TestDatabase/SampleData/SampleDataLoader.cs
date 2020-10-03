@@ -1,15 +1,24 @@
-﻿using System;
+﻿// Copyright (c) Jeremy Likness. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the repository root for license information.
+
+using System;
 using System.Collections.Generic;
-using System.Diagnostics.SymbolStore;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Xml;
 
 namespace TestDatabase.SampleData
 {
+    /// <summary>
+    /// Class to load sample data.
+    /// </summary>
     public class SampleDataLoader
     {
+        /// <summary>
+        /// Check to see if the database exists. If not, create it and load
+        /// the test data.
+        /// </summary>
+        /// <param name="dataContext">The <see cref="TestDataContext"/>/.</param>
         public void CheckAndSeed(TestDataContext dataContext)
         {
             if (dataContext.Database.EnsureCreated())
@@ -20,6 +29,13 @@ namespace TestDatabase.SampleData
             }
         }
 
+        /// <summary>
+        /// This generates the seeded database using the graph hierarchy
+        /// starting with <see cref="TestAssembly"/> then
+        /// <see cref="TestGroup"/>, <see cref="TestResult"/>, and finally
+        /// <see cref="TestIterationResult"/>.
+        /// </summary>
+        /// <returns>The root assemblies.</returns>
         public ICollection<TestAssembly> GenerateSeed()
         {
             var assembly = GetType().Assembly;
@@ -36,17 +52,24 @@ namespace TestDatabase.SampleData
                         xml = reader.ReadToEnd();
                     }
                 }
+
                 ProcessXml(graphRoot, xml);
             }
+
             return graphRoot;
         }
 
+        /// <summary>
+        /// Process the loaded XML for a test assembly.
+        /// </summary>
+        /// <param name="graphRoot">The root assemblies.</param>
+        /// <param name="xml">The loaded test results XML.</param>
         private void ProcessXml(List<TestAssembly> graphRoot, string xml)
         {
             var doc = new XmlDocument();
             doc.LoadXml(xml);
             var tests = doc.DocumentElement.ChildNodes[2];
-            foreach(XmlNode child in tests.ChildNodes)
+            foreach (XmlNode child in tests.ChildNodes)
             {
                 if (child.Name == "UnitTestResult")
                 {
@@ -63,6 +86,7 @@ namespace TestDatabase.SampleData
                         iteration = parts[parts.Count - 1];
                         parts.RemoveAt(parts.Count - 1);
                     }
+
                     var test = string.Join(" ", parts);
 
                     TestIterationResult iterationResult = null;
@@ -71,7 +95,7 @@ namespace TestDatabase.SampleData
                         iterationResult = new TestIterationResult
                         {
                             Iteration = iteration,
-                            DurationTicks = duration.Ticks
+                            DurationTicks = duration.Ticks,
                         };
                     }
 
@@ -86,9 +110,9 @@ namespace TestDatabase.SampleData
                         {
                             TestName = test,
                             DurationTicks = iterationResult == null ?
-                                duration.Ticks : 0
+                                duration.Ticks : 0,
                         };
-                        
+
                         if (iterationResult != null)
                         {
                             testResult.AddIteration(iterationResult);
@@ -103,7 +127,7 @@ namespace TestDatabase.SampleData
                             groupResult = new TestGroup
                             {
                                 GroupName = group,
-                                DurationTicks = 0
+                                DurationTicks = 0,
                             };
 
                             groupResult.AddTestResult(testResult);
@@ -117,7 +141,7 @@ namespace TestDatabase.SampleData
                                 testAssembly = new TestAssembly
                                 {
                                     AssemblyName = assembly,
-                                    DurationTicks = 0
+                                    DurationTicks = 0,
                                 };
 
                                 testAssembly.AddGroup(groupResult);
@@ -142,6 +166,11 @@ namespace TestDatabase.SampleData
             }
         }
 
+        /// <summary>
+        /// Parses the name of the test.
+        /// </summary>
+        /// <param name="fullTest">The full test name.</param>
+        /// <returns>The parsed parts of the test.</returns>
         private IList<string> TestNameParser(string fullTest)
         {
             var parsed = fullTest.AsSpan();

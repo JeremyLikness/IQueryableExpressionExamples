@@ -1,19 +1,36 @@
-﻿using System;
+﻿// Copyright (c) Jeremy Likness. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the repository root for license information.
+
+using System;
 using System.Linq;
 using System.Linq.Expressions;
 
 namespace CtorPerformance
 {
+    /// <summary>
+    /// Service that uses <see cref="NewExpression"/>.
+    /// </summary>
     public class IocExpression : IService
     {
-        readonly Func<Widget> init;
-        readonly Func<string, Guid, int, DateTime, Widget> initParams;
+        /// <summary>
+        /// Delegate for parameterless constructor.
+        /// </summary>
+        private readonly Func<Widget> init;
 
+        /// <summary>
+        /// Delegate for constructor with parameters.
+        /// </summary>
+        private readonly Func<string, Guid, int, DateTime, Widget> initParams;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IocExpression"/>
+        /// class.
+        /// </summary>
         public IocExpression()
         {
             var ctors = typeof(Widget).GetConstructors();
             var ctor = ctors.Where(c => c.GetParameters().Length == 0).Single();
-            
+
             var ctorInit = Expression.New(ctor);
             var ctorLambda = Expression.Lambda<Func<Widget>>(
                 ctorInit,
@@ -32,6 +49,11 @@ namespace CtorPerformance
             initParams = ctorParamsLambda.Compile();
         }
 
+        /// <summary>
+        /// Get the widget.
+        /// </summary>
+        /// <param name="parameters">Constructor parameters.</param>
+        /// <returns>The widget.</returns>
         public IWidget GetWidget(params object[] parameters)
         {
             var type = typeof(Widget);

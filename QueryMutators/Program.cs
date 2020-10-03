@@ -1,8 +1,11 @@
-﻿using ExpressionPowerTools.Core.Extensions;
+﻿// Copyright (c) Jeremy Likness. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the repository root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using ExpressionPowerTools.Core.Extensions;
 
 namespace QueryMutators
 {
@@ -52,6 +55,7 @@ namespace QueryMutators
             Console.WriteLine(Divider);
             Console.WriteLine("ENTER to continue.");
             Console.ReadLine();
+            Console.Clear();
         }
 
         /// <summary>
@@ -74,7 +78,7 @@ namespace QueryMutators
             // wrap and intercept
             var query = smallSample.CreateInterceptedQueryable(
                 ExpressionTransformer);
-            
+
             Console.WriteLine("About to run the query...");
 
             var list = query.Where(t => t.IsTrue &&
@@ -92,7 +96,7 @@ namespace QueryMutators
             Console.WriteLine("Resolves calls to binary expressions.");
 
             var smallSample = ThingDbQuery.Take(10);
-            
+
             static Expression ExpressionTransformer(Expression e)
             {
                 var newExpression = new BinaryResolvingVisitor<Thing>()
@@ -106,9 +110,10 @@ namespace QueryMutators
 
             Console.WriteLine("About to run the query...");
 
-            var list = query.Where(t => (t.IsTrue ||
-                (!t.IsTrue && t.Value % 2 == 0) &&
-                t.Expires < DateTime.Now.AddDays(500)))
+            var list = query.Where(
+                t => (t.IsTrue ||
+                (!t.IsTrue && t.Value % 2 == 0 &&
+                    t.Expires < DateTime.Now.AddDays(500))))
                 .OrderBy(t => t.Id).ToList();
 
             Console.WriteLine($"Retrieved {list.Count()} items.");
@@ -162,7 +167,7 @@ namespace QueryMutators
         /// <summary>
         /// Runs a query method.
         /// </summary>
-        /// <param name="query">The <see cref="QueryHost{T}"/>.</param>
+        /// <param name="query">The query.</param>
         /// <param name="filters">The filters to apply.</param>
         /// <param name="message">The message to show.</param>
         private static void RunMethod(

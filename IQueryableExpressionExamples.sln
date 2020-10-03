@@ -7,13 +7,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CtorPerformance", "CtorPerf
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9D3CEF31-E006-4791-AD26-6BB696B8593B}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		.gitignore = .gitignore
 		01-intro-expressions.ipynb = 01-intro-expressions.ipynb
 		02-constructor-example.ipynb = 02-constructor-example.ipynb
 		03-advanced-expression.ipynb = 03-advanced-expression.ipynb
 		04-introducing-iqueryable.ipynb = 04-introducing-iqueryable.ipynb
+		Directory.Build.props = Directory.Build.props
 		LICENSE = LICENSE
 		README.md = README.md
+		stylecop.json = stylecop.json
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestDatabase", "TestDatabase\TestDatabase.csproj", "{CA74726F-55BF-4E60-97DE-E24FE76695B3}"
@@ -24,7 +27,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestResultsBlazorApp.Client
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestResultsBlazorApp.Shared", "TestResultsBlazorApp\Shared\TestResultsBlazorApp.Shared.csproj", "{F0FBEB42-9EDA-43DA-8BA2-57940F614349}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QueryMutators", "QueryMutators\QueryMutators.csproj", "{E2D4C827-ED3A-4E30-B396-3E6BECCD1EE4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QueryMutators", "QueryMutators\QueryMutators.csproj", "{E2D4C827-ED3A-4E30-B396-3E6BECCD1EE4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

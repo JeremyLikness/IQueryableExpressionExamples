@@ -2,6 +2,8 @@
 
 Examples for the presentation _Inside IQueryable: The Power of .NET Expressions_.
 
+[Click here for the presentation deck](./Likness-IQueryable-TDevConf.pdf).
+
 The `.ipynb` extension is for Jupyter notebooks. To run these locally, follow the instructions
 at [.NET Interactive](https://github.com/dotnet/interactive).
 
@@ -11,6 +13,8 @@ The notebooks demonstrate:
 2. Example of using expressions to construct a new type instance
 3. Advanced expressions (combining multiple branches and using expression blocks)
 4. Introduction to queries
+
+![Example expression tree](./iqueryableexpressionexamples.jpg)
 
 The remaining projects are runnable as is.
 

@@ -41,5 +41,6 @@ This application shows several ways to mutate queries to perform tasks such as:
 
 - Enforce limits on the query return ("guard rails")
 - Intercept predicates in the tree
-- Evaluate ALL predicates against ALL values to debug why some are `true` and others are `false`.
--  
+- Evaluate ALL predicates against ALL values to debug why some are `true` and others are `false`
+
+[@JeremyLikness](https://twitter.com/JeremyLikness)
